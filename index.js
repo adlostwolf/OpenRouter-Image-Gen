@@ -1,4 +1,4 @@
-import { eventSource, event_types } from '../../../script.js';
+import { eventSource, event_types } from '../../../../script.js';
 
 const MODULE_NAME = 'openrouter_image_gen';
 
