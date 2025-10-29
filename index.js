@@ -152,7 +152,7 @@ async function loadModels() {
     availableModels = await fetchAvailableModels(apiKey);
 
     if (availableModels.length === 0) {
-        modelSelect.innerHTML = '<option value="">No image models found. Check your API key.</option>';
+        modelSelect.innerHTML = '<option value="">No models found. Check your API key.</option>';
         return;
     }
 
@@ -175,14 +175,36 @@ function saveSettings() {
 }
 
 async function generateImage() {
-    const settings = getSettings();
+    // @ts-ignore
+    const apiKey = document.getElementById('api-key').value;
+    // @ts-ignore
+    const model = document.getElementById('model-select').value;
     // @ts-ignore
     const prompt = document.getElementById('prompt').value;
 
-    if (!settings.apiKey || !settings.model || !prompt) {
-        alert('Please save settings and enter a prompt.');
+    // Validate inputs with specific error messages
+    if (!apiKey) {
+        alert('Please enter your OpenRouter API key.');
         return;
     }
+
+    if (!model) {
+        alert('Please load models and select a model.');
+        return;
+    }
+
+    if (!prompt) {
+        alert('Please enter a prompt.');
+        return;
+    }
+
+    // Auto-save settings before generating
+    const context = SillyTavern.getContext();
+    context.extensionSettings[MODULE_NAME] = {
+        apiKey: apiKey,
+        model: model,
+    };
+    context.saveSettingsDebounced();
 
     try {
         const response = await fetch('/api/plugins/openrouter-image-gen/generate', {
@@ -192,8 +214,8 @@ async function generateImage() {
             },
             body: JSON.stringify({
                 prompt,
-                model: settings.model,
-                apiKey: settings.apiKey,
+                model: model,
+                apiKey: apiKey,
             }),
         });
 
