@@ -1,47 +1,61 @@
 .openrouter-image-gen-panel {
-    padding: 20px;
-    background: var(--SmartThemeBodyColor);
-    border-radius: 8px;
-    margin: 10px 0;
+    padding: 10px;
+    margin: 5px 0;
 }
 
 .image-gen-field {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .image-gen-field label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    font-size: calc(var(--mainFontSize) * 0.9);
+    font-weight: 600;
+    opacity: 0.8;
+    margin: 0;
 }
 
 .image-gen-field input,
 .image-gen-field select,
 .image-gen-field textarea {
     width: 100%;
-    padding: 8px;
+    padding: 6px;
     border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 4px;
-    background: var(--SmartThemeBlurTintColor);
-    color: var(--SmartThemeBodyTextColor);
+    border-radius: 5px;
+    background: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: var(--mainFontFamily);
+    font-size: calc(var(--mainFontSize) * 0.9);
+}
+
+.image-gen-field textarea {
+    resize: vertical;
+    min-height: 3em;
 }
 
 .image-gen-field button {
-    padding: 10px 20px;
-    background: var(--SmartThemeQuoteColor);
-    color: white;
-    border: none;
-    border-radius: 4px;
+    padding: 6px 15px;
+    background: transparent;
+    color: var(--SmartThemeBodyColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
     cursor: pointer;
-    margin-right: 10px;
+    font-size: calc(var(--mainFontSize) * 0.9);
+    transition: var(--animation-duration);
+    width: fit-content;
+    align-self: flex-start;
 }
 
 .image-gen-field button:hover {
-    opacity: 0.8;
+    background: var(--black50a);
+    filter: brightness(1.2);
 }
 
 .generated-image {
-    margin-top: 20px;
+    margin-top: 15px;
     max-width: 100%;
-    border-radius: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--SmartThemeBorderColor);
 }
