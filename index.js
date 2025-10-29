@@ -20,19 +20,8 @@ async function fetchAvailableModels(apiKey) {
         }
 
         const data = await response.json();
-        // Filter for models that support image generation
-        const imageModels = data.data.filter(model => {
-            const modelId = model.id.toLowerCase();
-            return modelId.includes('dall-e') || 
-                   modelId.includes('stable-diffusion') || 
-                   modelId.includes('sdxl') ||
-                   modelId.includes('midjourney') ||
-                   modelId.includes('flux') ||
-                   modelId.includes('imagen') ||
-                   (model.architecture && model.architecture.modality === 'image');
-        });
-
-        return imageModels.map(m => ({
+        // Return all models so user can select image models manually
+        return data.data.map(m => ({
             id: m.id,
             name: m.name || m.id,
         }));
@@ -140,7 +129,7 @@ async function addPanel() {
     window.generateImage = generateImage;
     // @ts-ignore
     window.loadModels = loadModels;
-    
+
     // Auto-load models if API key is already set
     if (settings.apiKey) {
         await loadModels();
@@ -150,25 +139,25 @@ async function addPanel() {
 async function loadModels() {
     // @ts-ignore
     const apiKey = document.getElementById('api-key').value;
-    
+
     if (!apiKey) {
         alert('Please enter your OpenRouter API key first.');
         return;
     }
-    
+
     // @ts-ignore
     const modelSelect = document.getElementById('model-select');
     modelSelect.innerHTML = '<option value="">Loading models...</option>';
-    
+
     availableModels = await fetchAvailableModels(apiKey);
-    
+
     if (availableModels.length === 0) {
         modelSelect.innerHTML = '<option value="">No image models found. Check your API key.</option>';
         return;
     }
-    
+
     const settings = getSettings();
-    modelSelect.innerHTML = availableModels.map(model => 
+    modelSelect.innerHTML = availableModels.map(model =>
         `<option value="${model.id}" ${model.id === settings.model ? 'selected' : ''}>${model.name}</option>`
     ).join('');
 }
