@@ -1,4 +1,4 @@
-import { eventSource, event_types } from '../../../../script.js';
+import { eventSource, event_types, getRequestHeaders } from '../../../../script.js';
 
 const MODULE_NAME = 'openrouter_image_gen';
 
@@ -51,9 +51,7 @@ function registerImageGenerator() {
 
             const response = await fetch('/api/plugins/openrouter-image-gen/generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getRequestHeaders(),
                 body: JSON.stringify({
                     prompt: prompt + (negative ? `, negative: ${negative}` : ''),
                     model: settings.model,
@@ -209,9 +207,7 @@ async function generateImage() {
     try {
         const response = await fetch('/api/plugins/openrouter-image-gen/generate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: getRequestHeaders(),
             body: JSON.stringify({
                 prompt,
                 model: model,
