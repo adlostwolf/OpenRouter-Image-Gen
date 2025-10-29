@@ -3,16 +3,44 @@ import { eventSource, event_types } from '../../../../script.js';
 const MODULE_NAME = 'openrouter_image_gen';
 
 let panel = null;
+let availableModels = [];
 
-// List of OpenRouter image models (can be expanded)
-const imageModels = [
-    'openai/dall-e-3',
-    'openai/dall-e-2',
-    'stability-ai/stable-diffusion-xl-1024-v1-0',
-    'stability-ai/sdxl-1.0',
-    'midjourney/midjourney',
-    // Add more as needed
-];
+async function fetchAvailableModels(apiKey) {
+    try {
+        const response = await fetch('https://openrouter.ai/api/v1/models', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+            },
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch models from OpenRouter');
+            return [];
+        }
+
+        const data = await response.json();
+        // Filter for models that support image generation
+        const imageModels = data.data.filter(model => {
+            const modelId = model.id.toLowerCase();
+            return modelId.includes('dall-e') || 
+                   modelId.includes('stable-diffusion') || 
+                   modelId.includes('sdxl') ||
+                   modelId.includes('midjourney') ||
+                   modelId.includes('flux') ||
+                   modelId.includes('imagen') ||
+                   (model.architecture && model.architecture.modality === 'image');
+        });
+
+        return imageModels.map(m => ({
+            id: m.id,
+            name: m.name || m.id,
+        }));
+    } catch (error) {
+        console.error('Error fetching OpenRouter models:', error);
+        return [];
+    }
+}
 
 function init() {
     eventSource.on(event_types.APP_READY, () => {
@@ -64,12 +92,12 @@ function getSettings() {
     const context = SillyTavern.getContext();
     context.extensionSettings[MODULE_NAME] = context.extensionSettings[MODULE_NAME] || {
         apiKey: '',
-        model: imageModels[0],
+        model: '',
     };
     return context.extensionSettings[MODULE_NAME];
 }
 
-function addPanel() {
+async function addPanel() {
     const container = document.querySelector('#extensions_settings');
     if (!container) return;
 
@@ -82,11 +110,12 @@ function addPanel() {
         <div class="image-gen-field">
             <label for="api-key">OpenRouter API Key:</label>
             <input type="password" id="api-key" value="${settings.apiKey}" placeholder="Enter your OpenRouter API key">
+            <button onclick="loadModels()">Load Models</button>
         </div>
         <div class="image-gen-field">
             <label for="model-select">Model:</label>
             <select id="model-select">
-                ${imageModels.map(model => `<option value="${model}" ${model === settings.model ? 'selected' : ''}>${model}</option>`).join('')}
+                <option value="">-- Select a model after loading --</option>
             </select>
         </div>
         <div class="image-gen-field">
@@ -109,6 +138,39 @@ function addPanel() {
     window.saveSettings = saveSettings;
     // @ts-ignore
     window.generateImage = generateImage;
+    // @ts-ignore
+    window.loadModels = loadModels;
+    
+    // Auto-load models if API key is already set
+    if (settings.apiKey) {
+        await loadModels();
+    }
+}
+
+async function loadModels() {
+    // @ts-ignore
+    const apiKey = document.getElementById('api-key').value;
+    
+    if (!apiKey) {
+        alert('Please enter your OpenRouter API key first.');
+        return;
+    }
+    
+    // @ts-ignore
+    const modelSelect = document.getElementById('model-select');
+    modelSelect.innerHTML = '<option value="">Loading models...</option>';
+    
+    availableModels = await fetchAvailableModels(apiKey);
+    
+    if (availableModels.length === 0) {
+        modelSelect.innerHTML = '<option value="">No image models found. Check your API key.</option>';
+        return;
+    }
+    
+    const settings = getSettings();
+    modelSelect.innerHTML = availableModels.map(model => 
+        `<option value="${model.id}" ${model.id === settings.model ? 'selected' : ''}>${model.name}</option>`
+    ).join('');
 }
 
 function saveSettings() {
